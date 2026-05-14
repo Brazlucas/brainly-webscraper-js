@@ -287,6 +287,39 @@ button:disabled {
   border: 1px solid rgba(244, 63, 94, 0.2);
 }
 
+.question-details {
+  background-color: #ffffff;
+  color: #1e293b; /* Slate 800 */
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.question-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #3b82f6; /* Blue 500 */
+  outline: none;
+  font-size: 0.95rem;
+}
+
+.question-details summary::-webkit-details-marker {
+  color: #3b82f6;
+}
+
+.question-content {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1rem;
+}
+
+.question-content p {
+  margin-bottom: 0.8rem;
+}
+
 .error-card {
   margin-top: 2rem;
   background: rgba(239, 68, 68, 0.1);

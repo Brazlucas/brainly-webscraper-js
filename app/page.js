@@ -87,6 +87,17 @@ export default function Home() {
               </svg>
               Melhor Resposta Encontrada
             </h3>
+            
+            {result.questionHtml && (
+              <details className="question-details">
+                <summary>Ver pergunta original do Brainly (Clique para expandir)</summary>
+                <div 
+                  className="question-content"
+                  dangerouslySetInnerHTML={{ __html: result.questionHtml }}
+                />
+              </details>
+            )}
+
             {result.allAnswers && result.allAnswers.length > 0 ? (
               <div className="answers-list">
                 {result.allAnswers.map((answer, index) => (
