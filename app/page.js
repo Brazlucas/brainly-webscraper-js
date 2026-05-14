@@ -88,11 +88,21 @@ export default function Home() {
               </svg>
               Melhor Resposta Encontrada
             </h3>
-            {result.bestAnswer ? (
-              <div 
-                className="result-content"
-                dangerouslySetInnerHTML={{ __html: result.bestAnswer }}
-              />
+            {result.allAnswers && result.allAnswers.length > 0 ? (
+              <div className="answers-list">
+                {result.allAnswers.map((answer, index) => (
+                  <div key={index} className={`result-content ${index === 0 ? 'primary-answer' : 'secondary-answer'}`}>
+                    <div className="answer-header">
+                      <span className="answer-badge">{index === 0 ? 'Melhor Resposta' : `Resposta ${index + 1}`}</span>
+                      {answer.isVerified && <span className="verified-badge">✓ Verificada</span>}
+                      <span className="thanks-badge">❤️ {answer.thanks} avaliações</span>
+                    </div>
+                    <div 
+                      dangerouslySetInnerHTML={{ __html: answer.html }}
+                    />
+                  </div>
+                ))}
+              </div>
             ) : (
               <p>{result.message}</p>
             )}

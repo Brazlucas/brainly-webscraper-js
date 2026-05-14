@@ -223,6 +223,60 @@ button:disabled {
   margin-bottom: 1rem;
 }
 
+.answers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.secondary-answer {
+  background: rgba(0,0,0,0.1);
+  border-left: 4px solid #64748b; /* Slate 500 */
+}
+
+.answer-header {
+  display: flex;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.answer-badge {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399; /* Emerald 400 */
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.secondary-answer .answer-badge {
+  background: rgba(100, 116, 139, 0.2);
+  color: #cbd5e1; /* Slate 300 */
+  border-color: rgba(100, 116, 139, 0.3);
+}
+
+.verified-badge {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8; /* Sky 400 */
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.thanks-badge {
+  background: rgba(244, 63, 94, 0.1);
+  color: #fb7185; /* Rose 400 */
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(244, 63, 94, 0.2);
+}
+
 .error-card {
   margin-top: 2rem;
   background: rgba(239, 68, 68, 0.1);

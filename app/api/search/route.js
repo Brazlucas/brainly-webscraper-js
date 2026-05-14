@@ -48,35 +48,96 @@ export async function POST(request) {
         // Wait a little bit for Brainly's React app to render the search results
         await new Promise(r => setTimeout(r, 2000));
         
-        // Extract the first brainly URL from the search results
-        brainlyUrl = await page.evaluate(() => {
+        // Extract the top 2 brainly URLs from the search results
+        let extractedUrls = await page.evaluate(() => {
           const links = document.querySelectorAll('a[href*="/tarefa/"]');
+          let urls = [];
           for (let link of links) {
             if (link.href && link.href.includes('/tarefa/')) {
-              return link.href.split('?')[0]; // Return clean URL without tracking params
+              urls.push(link.href.split('?')[0]);
             }
           }
-          return null;
+          // Remove duplicates and take top 2
+          return [...new Set(urls)].slice(0, 2);
         });
+        
+        if (extractedUrls.length > 0) {
+          brainlyUrl = extractedUrls; // Now an array
+        } else {
+          brainlyUrl = null;
+        }
+      } else {
+        brainlyUrl = [brainlyUrl]; // Make it an array for consistency
       }
 
+      let allAnswers = [];
       let bestAnswer = null;
 
-      if (brainlyUrl) {
-        // Now let's try to visit the Brainly URL
-        // Cloudflare might block this, but we'll try with stealth plugin
-        await page.goto(brainlyUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
-        
-        bestAnswer = await page.evaluate(() => {
-          // Brainly usually puts the verified answer in a specific div
-          // Looking for elements that look like the answer text
-          const answerElements = document.querySelectorAll('[data-testid="answer_box_text"], .js-answer-content');
-          if (answerElements && answerElements.length > 0) {
-            // Retorna o innerHTML para manter negritos (b, strong) e quebras de linha (br, p)
-            return answerElements[0].innerHTML;
+      if (brainlyUrl && brainlyUrl.length > 0) {
+        for (const url of brainlyUrl) {
+          try {
+            await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+            
+            let extractedAnswers = await page.evaluate(() => {
+              const boxes = Array.from(document.querySelectorAll('[data-testid="answer_box"]'));
+              if (boxes.length > 0) {
+                return boxes.map(box => {
+                  const textEl = box.querySelector('[data-testid="answer_box_text"]');
+                  const ratingEl = box.querySelector('[data-testid="answer_rating"]');
+                  const thanksEl = box.querySelector('[data-testid="thanks_count"]');
+                  const verifiedEl = box.querySelector('[data-testid="answer_box_expert_verified"], [data-testid="answer_box_verified_badge"]');
+                  
+                  const fallbackThanks = box.querySelector('.js-thanks-button, [aria-label*="obrigado"]');
+                  let thanksText = thanksEl ? thanksEl.innerText : (fallbackThanks ? fallbackThanks.innerText : "0");
+                  const thanksMatch = thanksText.match(/\d+/);
+                  
+                  return {
+                    html: textEl ? textEl.innerHTML : null,
+                    rating: ratingEl ? parseFloat(ratingEl.innerText.replace(',', '.')) : 0,
+                    thanks: thanksMatch ? parseInt(thanksMatch[0]) : 0,
+                    isVerified: !!verifiedEl
+                  };
+                });
+              }
+              
+              const texts = Array.from(document.querySelectorAll('[data-testid="answer_box_text"], .js-answer-content'));
+              return texts.map(el => ({ 
+                html: el.innerHTML, 
+                rating: 0,
+                thanks: 0,
+                isVerified: false
+              }));
+            });
+            
+            extractedAnswers = extractedAnswers.filter(a => a.html);
+            allAnswers.push(...extractedAnswers);
+          } catch (err) {
+            console.error(`Erro ao extrair da url ${url}:`, err.message);
           }
-          return null;
-        });
+        }
+        
+        if (allAnswers.length > 0) {
+          // Remove exact duplicate answers by comparing a snippet of HTML
+          const uniqueAnswers = [];
+          const seen = new Set();
+          for (const ans of allAnswers) {
+            const cleanSnippet = ans.html.substring(0, 100).replace(/\s+/g, ' ');
+            if (!seen.has(cleanSnippet)) {
+              seen.add(cleanSnippet);
+              uniqueAnswers.push(ans);
+            }
+          }
+          
+          // Sort by Verified first, then rating, then thanks
+          uniqueAnswers.sort((a, b) => {
+            if (a.isVerified !== b.isVerified) return a.isVerified ? -1 : 1;
+            if (a.rating !== b.rating) return b.rating - a.rating;
+            return b.thanks - a.thanks;
+          });
+          
+          allAnswers = uniqueAnswers.slice(0, 3);
+          bestAnswer = allAnswers[0].html;
+        }
       }
 
       await browser.close();
@@ -92,6 +153,7 @@ export async function POST(request) {
       return NextResponse.json({ 
         success: true, 
         bestAnswer: bestAnswer,
+        allAnswers: allAnswers,
         questionUrl: brainlyUrl || null
       });
 
