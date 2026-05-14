@@ -83,17 +83,20 @@ export async function POST(request) {
               if (boxes.length > 0) {
                 return boxes.map(box => {
                   const textEl = box.querySelector('[data-testid="answer_box_text"]');
-                  const ratingEl = box.querySelector('[data-testid="answer_rating"]');
-                  const thanksEl = box.querySelector('[data-testid="thanks_count"]');
+                  const ratingEl = box.querySelector('[data-testid="answer_rating"], [data-testid="answer_box_rating_value"]');
+                  const thanksEl = box.querySelector('[data-testid="thanks_count"], [data-testid="answer_box_thanks_value"]');
                   const verifiedEl = box.querySelector('[data-testid="answer_box_expert_verified"], [data-testid="answer_box_verified_badge"]');
                   
                   const fallbackThanks = box.querySelector('.js-thanks-button, [aria-label*="obrigado"]');
                   let thanksText = thanksEl ? thanksEl.innerText : (fallbackThanks ? fallbackThanks.innerText : "0");
                   const thanksMatch = thanksText.match(/\d+/);
                   
+                  let ratingText = ratingEl ? ratingEl.innerText : "0";
+                  const ratingMatch = ratingText.match(/(\d+[\.,]\d+)/);
+                  
                   return {
                     html: textEl ? textEl.innerHTML : null,
-                    rating: ratingEl ? parseFloat(ratingEl.innerText.replace(',', '.')) : 0,
+                    rating: ratingMatch ? parseFloat(ratingMatch[0].replace(',', '.')) : 0,
                     thanks: thanksMatch ? parseInt(thanksMatch[0]) : 0,
                     isVerified: !!verifiedEl
                   };

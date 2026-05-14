@@ -45,7 +45,6 @@ export default function Home() {
     <div className="container">
       <header>
         <h1>Brainly Helper</h1>
-        <p>Cole sua questão da faculdade abaixo para encontrar a melhor resposta.</p>
       </header>
 
       <main className="card">
@@ -57,9 +56,9 @@ export default function Home() {
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
           />
-          
-          <button 
-            onClick={handleSearch} 
+
+          <button
+            onClick={handleSearch}
             disabled={loading || !inputText.trim()}
           >
             {loading ? (
@@ -95,9 +94,10 @@ export default function Home() {
                     <div className="answer-header">
                       <span className="answer-badge">{index === 0 ? 'Melhor Resposta' : `Resposta ${index + 1}`}</span>
                       {answer.isVerified && <span className="verified-badge">✓ Verificada</span>}
+                      {answer.rating > 0 && <span className="rating-badge">⭐ {answer.rating}</span>}
                       <span className="thanks-badge">❤️ {answer.thanks} avaliações</span>
                     </div>
-                    <div 
+                    <div
                       dangerouslySetInnerHTML={{ __html: answer.html }}
                     />
                   </div>
@@ -107,9 +107,9 @@ export default function Home() {
               <p>{result.message}</p>
             )}
             {result.questionUrl && (
-              <a 
-                href={result.questionUrl} 
-                target="_blank" 
+              <a
+                href={result.questionUrl}
+                target="_blank"
                 rel="noreferrer"
                 style={{ display: 'inline-block', marginTop: '1rem', color: '#38bdf8', textDecoration: 'none', fontSize: '0.9rem' }}
               >

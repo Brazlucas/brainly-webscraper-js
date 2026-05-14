@@ -267,6 +267,16 @@ button:disabled {
   border: 1px solid rgba(56, 189, 248, 0.3);
 }
 
+.rating-badge {
+  background: rgba(250, 204, 21, 0.15);
+  color: #fde047; /* Yellow 300 */
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(250, 204, 21, 0.3);
+}
+
 .thanks-badge {
   background: rgba(244, 63, 94, 0.1);
   color: #fb7185; /* Rose 400 */
