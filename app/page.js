@@ -1,64 +1,113 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 
 export default function Home() {
+  const [inputText, setInputText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+
+  const handleSearch = async () => {
+    if (!inputText.trim()) {
+      setError("Por favor, cole a pergunta e as alternativas.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const response = await fetch("/api/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ question: inputText }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Ocorreu um erro ao buscar no Brainly.");
+      }
+
+      setResult(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="container">
+      <header>
+        <h1>Brainly Helper</h1>
+        <p>Cole sua questão da faculdade abaixo para encontrar a melhor resposta.</p>
+      </header>
+
+      <main className="card">
+        <div className="input-group">
+          <label htmlFor="question">Enunciado e Alternativas</label>
+          <textarea
+            id="question"
+            placeholder="Exemplo: Conforme mencionado no artigo...&#10;&#10;Alternativas:&#10;Alternativa 1: ...&#10;Alternativa 2: ..."
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+          />
+          
+          <button 
+            onClick={handleSearch} 
+            disabled={loading || !inputText.trim()}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            {loading ? (
+              <>
+                <div className="spinner"></div>
+                Buscando...
+              </>
+            ) : (
+              "Encontrar Resposta Correta"
+            )}
+          </button>
         </div>
+
+        {error && (
+          <div className="error-card">
+            <p>⚠️ {error}</p>
+          </div>
+        )}
+
+        {result && (
+          <div className="result-card">
+            <h3>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              Melhor Resposta Encontrada
+            </h3>
+            {result.bestAnswer ? (
+              <div 
+                className="result-content"
+                dangerouslySetInnerHTML={{ __html: result.bestAnswer }}
+              />
+            ) : (
+              <p>{result.message}</p>
+            )}
+            {result.questionUrl && (
+              <a 
+                href={result.questionUrl} 
+                target="_blank" 
+                rel="noreferrer"
+                style={{ display: 'inline-block', marginTop: '1rem', color: '#38bdf8', textDecoration: 'none', fontSize: '0.9rem' }}
+              >
+                Ver questão original no Brainly ↗
+              </a>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );
